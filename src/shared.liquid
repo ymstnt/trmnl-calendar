@@ -1,0 +1,91 @@
+{% comment %} Settings and variables {% endcomment %}
+{% assign settings = trmnl.plugin_settings.custom_fields_values %}
+{% assign days = settings.days | split: ',' %}
+{% assign months = settings.months | split: ',' %}
+{% assign important_events = settings.important_events | split: ',' %}
+
+{% comment %} Calculate dates and indexes {% endcomment %}
+{% assign now_ts = 'now' | date: '%s' %}
+{% assign current_year = 'now' | date: '%Y' %}
+{% assign today_iso = 'now' | date: '%Y-%m-%d' %}
+
+{% assign month_index = 'now' | date: '%m' | minus: 1 %}
+{% assign raw_day = 'now' | date: '%w' | plus: 0 %}
+{% assign day_index = raw_day | plus: 6 | modulo: 7 %}
+{% assign today_date = 'now' | date: '%d' | append: ' ' | append: months[month_index] %}
+{% assign today_day = days[day_index] %}
+
+{% comment %} Concat calendar events {% endcomment %}
+{% assign events = '' | split: '' %}
+{% if IDX_1.ical %}{% assign events = events | concat: IDX_1.ical %}{% endif %}
+{% if IDX_2.ical %}{% assign events = events | concat: IDX_2.ical %}{% endif %}
+{% if IDX_3.ical %}{% assign events = events | concat: IDX_3.ical %}{% endif %}
+{% if IDX_4.ical %}{% assign events = events | concat: IDX_4.ical %}{% endif %}
+{% if IDX_5.ical %}{% assign events = events | concat: IDX_5.ical %}{% endif %}
+{% if IDX_6.ical %}{% assign events = events | concat: IDX_6.ical %}{% endif %}
+{% assign events = events | sort: 'DTSTART' %}
+
+{% comment %} Countdown logic (important events) {% endcomment %}
+{% assign countdown_days_remaining = 9999 %}
+{% for item in important_events %}
+  {% assign parts = item | split: ';' %}
+  {% assign full_date = current_year | append: '-' | append: parts[0] %}
+  
+  {% comment %} If the event is past this year, we calculate using next year {% endcomment %}
+  {% if full_date < today_iso %}
+    {% assign full_date = current_year | plus: 1 | append: '-' | append: parts[0] %}
+  {% endif %}
+
+  {% comment %} Count down the remaining days {% endcomment %}
+  {% if full_date == today_iso %}
+    {% assign days_left = 0 %}
+  {% else %}
+    {% assign days_left = full_date | date: '%s' | minus: now_ts | divided_by: 86400 | plus: 1 %}
+  {% endif %}
+
+  {% comment %} Choose the closest event {% endcomment %}
+  {% if days_left < countdown_days_remaining %}
+    {% assign countdown_days_remaining = days_left %}
+    {% assign countdown_title = parts[1] %}
+  {% endif %}
+{% endfor %}
+
+{% comment %} Reusable templates {% endcomment %}
+
+{% template upcoming_date %}
+  {% assign set = trmnl.plugin_settings.custom_fields_values %}
+  {% assign d_iso = target_date | date: '%Y-%m-%d' %}
+  {% assign tomorrow_iso = 'now' | date: '%s' | plus: 86400 | date: '%Y-%m-%d' %}
+
+  <span class="label label--inverted p--1 pb--0.5">
+    {% if d_iso == tomorrow_iso %}
+      {{ set.tomorrow | default: "Holnap" }}
+    {% else %}
+      {% assign raw_day_idx = target_date | date: '%w' | plus: 0 %}
+      {% assign day_idx = raw_day_idx | plus: 6 | modulo: 7 %}
+      {% assign month_idx = target_date | date: '%m' | minus: 1 %}
+      {% assign t_days = set.days | split: ',' %}
+      {% assign t_months = set.months | split: ',' %}
+      
+      {{ t_days[day_idx] }}, {{ target_date | date: '%d' }} {{ t_months[month_idx] }}
+    {% endif %}
+  </span>
+{% endtemplate %}
+
+{% template weather_by_date %}
+  {% assign found_index = -1 %}
+  
+  {% for date in weather.daily.time %}
+    {% if date == target_date %}
+      {% assign found_index = forloop.index0 %}
+      {% break %}
+    {% endif %}
+  {% endfor %}
+
+  {% if found_index != -1 %}
+    <span class="label p--1 flex flex--center gap--small">
+      <img class="w--5" src="https://zoltan.co/rpi-dash/images/weather/{{ weather.daily.weather_code[found_index] }}.svg">
+      {{ weather.daily.temperature_2m_max[found_index] }}&deg;
+    </span>
+  {% endif %}
+{% endtemplate %}

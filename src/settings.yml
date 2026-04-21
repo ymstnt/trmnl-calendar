@@ -1,0 +1,70 @@
+#
+# Changes to this file will be overwritten by `trmnlp pull`.
+#
+# Docs: https://help.usetrmnl.com/en/articles/10542599-importing-and-exporting-private-plugins#h_581fb988f0
+#
+---
+strategy: polling
+no_screen_padding: "no"
+dark_mode: "no"
+static_data: ""
+polling_verb: get
+polling_url: "https://api.open-meteo.com/v1/forecast?latitude={{ latitude }}&longitude={{ longitude }}&daily=precipitation_sum,precipitation_probability_max,weather_code,temperature_2m_min,temperature_2m_max&current=temperature_2m,weather_code,is_day&timezone={{ timezone | url_encode }}&forecast_days={{ days_to_display }}"
+polling_headers: ""
+name: Calendar & Weather
+refresh_interval: 1440
+custom_fields:
+  - keyname: author_bio
+    field_type: author_bio
+    name: "About this plugin"
+    description: "This plugin loads data from remote iCal calendars and Open Meteo's data for a given location, and displays a nice personal dashboard.\n\nOriginal plugin by Zoltán Hosszú. Ported to Larapaper by ymstnt.\n"
+    category: "calendar,productivity"
+    github_url: "https://github.com/ymstnt/trmnl-calendar"
+  - keyname: days_to_display
+    field_type: number
+    name: "Days to display"
+    description: "Number of days to display in the schedule (including today)"
+    default: "7"
+    min: 1
+    max: 7
+  - keyname: latitude
+    field_type: string
+    name: Latitude
+    description: "Location for the weather API."
+    placeholder: 50.7344
+  - keyname: longitude
+    field_type: string
+    name: Longitude
+    description: "Location for the weather API."
+    placeholder: 50.7344
+  - keyname: timezone
+    field_type: string
+    name: "Time Zone"
+    description: "Set the Time Zone. This is used to display the correct date and time in weather data."
+  - keyname: days
+    field_type: multi_string
+    name: "Name of the days"
+    description: "Define the days of the week. This helps with localization. One per line, start with Monday."
+  - keyname: months
+    field_type: multi_string
+    name: "Name of the months"
+    description: "Define the name of the months. This helps with localization. One per line, start with January."
+    default: "January,February,March,April,May,June,July,August,September,October,November,December"
+    optional: true
+  - keyname: today
+    field_type: string
+    name: 'Word for "today"'
+    description: "Define how today is called. This helps with localization."
+    default: Today
+    optional: true
+  - keyname: tomorrow
+    field_type: string
+    name: 'Word for "tomorrow"'
+    description: "Define how tomorrow is called. This helps with localization."
+    default: Tomorrow
+    optional: true
+  - keyname: important_events
+    field_type: multi_string
+    name: "Important Events"
+    description: "Input important events, such as holidays, birthdays etc. They will show up on the bottom as countdown. Format: MM-DD;Event name"
+    optional: true

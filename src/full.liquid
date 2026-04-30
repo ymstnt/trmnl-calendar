@@ -15,7 +15,7 @@
             {% if ev_date == today_iso %}
               {% if t_count >= 5 %}{% break %}{% endif %}
 
-              {% assign st = event.DTSTART | date: '%H:%M' %}
+              {% assign st = event.DTSTART | date: '%s' | plus: trmnl.user.utc_offset | date: '%H:%M' %}
               {% assign is_all_day = false %}
               {% unless event.DTSTART contains 'T' -%}
                 {%- assign is_all_day = true -%}
@@ -93,7 +93,7 @@
                 {% assign last_date = current_date %}
             {% endif %}
 
-            {% assign st = event.DTSTART | date: '%H:%M' %}
+            {% assign st = event.DTSTART | date: '%s' | plus: trmnl.user.utc_offset | date: '%H:%M' %}
             {% assign all_d = false %}
             {% unless event.DTSTART contains 'T' -%}
               {%- assign all_d = true -%}

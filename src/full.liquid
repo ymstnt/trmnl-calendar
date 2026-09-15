@@ -17,12 +17,22 @@
 
               {% assign st = event.DTSTART | date: '%s' | plus: trmnl.user.utc_offset | date: '%H:%M' %}
               {% assign is_all_day = false %}
-              {% unless event.DTSTART contains 'T' -%}
-                {%- assign is_all_day = true -%}
-              {%- elsif st == '00:00' -%}
-                {%- assign is_all_day = true -%}
-              {%- endunless %}
 
+              {% unless event.DTSTART contains 'T' %}
+                {% assign is_all_day = true %}
+              {% else %}
+                {% assign start_raw = event.DTSTART | slice: 11, 8 %}
+                {% assign end_raw = event.DTEND | slice: 11, 8 %}
+              
+                {% assign start_ts = event.DTSTART | date: '%s' %}
+                {% assign end_ts = event.DTEND | date: '%s' %}
+                {% assign duration = end_ts | minus: start_ts %}
+                {% assign duration_rem = duration | modulo: 86400 %}
+              
+                {% if start_raw == '00:00:00' and end_raw == '00:00:00' and duration > 0 and duration_rem == 0 %}
+                  {% assign is_all_day = true %}
+                {% endif %}
+              {% endunless %}
               <div class="item mb--4 mt--2">
                 <div class="meta"></div>
                 <div class="content flex flex--col flex--left pt--1 pb--1">
@@ -94,18 +104,29 @@
             {% endif %}
 
             {% assign st = event.DTSTART | date: '%s' | plus: trmnl.user.utc_offset | date: '%H:%M' %}
-            {% assign all_d = false %}
-            {% unless event.DTSTART contains 'T' -%}
-              {%- assign all_d = true -%}
-            {%- elsif st == '00:00' -%}
-              {%- assign all_d = true -%}
-            {%- endunless %}
+            {% assign all_day = false %}
+
+            {% unless event.DTSTART contains 'T' %}
+              {% assign all_day = true %}
+            {% else %}
+              {% assign start_raw = event.DTSTART | slice: 11, 8 %}
+              {% assign end_raw = event.DTEND | slice: 11, 8 %}
+            
+              {% assign start_ts = event.DTSTART | date: '%s' %}
+              {% assign end_ts = event.DTEND | date: '%s' %}
+              {% assign duration = end_ts | minus: start_ts %}
+              {% assign duration_rem = duration | modulo: 86400 %}
+            
+              {% if start_raw == '00:00:00' and end_raw == '00:00:00' and duration > 0 and duration_rem == 0 %}
+                {% assign all_day = true %}
+              {% endif %}
+            {% endunless %}
 
             <div class="item">
               <div class="meta"></div>
               <div class="content">
                 <span class="title clamp--1">
-                  {% unless all_d %}{{ st }} &ndash; {% endunless %}
+                  {% unless all_day %}{{ st }} &ndash; {% endunless %}
                   {{ event.SUMMARY | truncate: 35 }}
                 </span>
               </div>

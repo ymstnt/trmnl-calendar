@@ -145,7 +145,11 @@
         <div class="label label--inverted bg--black p--0.5 flex flex--col">
           <div class="bg--black h--0.5 text--black">.</div>
           <span class="value value--small text--black bg--white pl--2 pr--2 text--center">
-            {{ countdown_days_remaining }}
+            {%if countdown_days_remaining == 0%}
+              {{ settings.today }}
+            {%else%}
+              {{ countdown_days_remaining }}
+            {%endif%}
           </span>
         </div>
         <span class="title content pt--3 ml--2">{{ countdown_title }}</span>

@@ -8,12 +8,19 @@
         </div>
 
         <!-- Today's events -->
-        <div class="mt--2" data-list-limit="true" data-list-max-height="auto" data-list-hidden-count="true">
+        {% assign today_total = 0 %}
+        {% for event in events %}
+          {% assign ev_date = event.DTSTART | date: '%Y-%m-%d' %}
+          {% if ev_date == today_iso %}
+            {% assign today_total = today_total | plus: 1 %}
+          {% endif %}
+        {% endfor %}
+        <div class="mt--2">
           {% assign t_count = 0 %}
           {% for event in events %}
             {% assign ev_date = event.DTSTART | date: '%Y-%m-%d' %}
             {% if ev_date == today_iso %}
-              {% if t_count >= 5 %}{% break %}{% endif %}
+              {% if t_count >= 3 %}{% break %}{% endif %}
 
               {% assign st = event.DTSTART | date: '%s' | plus: trmnl.user.utc_offset | date: '%H:%M' %}
               {% assign is_all_day = false %}
@@ -33,20 +40,30 @@
                   {% assign is_all_day = true %}
                 {% endif %}
               {% endunless %}
+
               <div class="item mb--4 mt--2">
                 <div class="meta"></div>
                 <div class="content flex flex--col flex--left pt--1 pb--1">
                   {% unless is_all_day %}
                     <span class="value value--small mb--0.5">{{ st }}</span>
                   {% endunless %}
-                  <span class="title">
-                    {{ event.SUMMARY | truncate: 28 }}
+                  <span class="title clamp--1">
+                    {{ event.SUMMARY | truncate: 25 }}
                   </span>
                 </div>
               </div>
               {% assign t_count = t_count | plus: 1 %}
             {% endif %}
           {% endfor %}
+          {% if today_total > 3 %}
+            {% assign remaining = today_total | minus: 3 %}
+            <div class="item mb--4 mt--2">
+              <div class="meta"></div>
+              <div class="content pt--1 pb--1">
+                <span class="label label--gray">+{{ remaining }} esemény</span>
+              </div>
+            </div>
+          {% endif %}
         </div>
       </div>
 
@@ -73,9 +90,8 @@
     <div class="layout layout--col layout--top col--span-7 border--v-4 pl--3 flex flex--left">
       <div
         class="layout layout--col layout--top flex flex--left stretch-x"
-        data-list-limit="true"
-        data-list-max-height="auto"
-        data-list-hidden-count="true"
+        data-overflow="true"
+        data-overflow-cols="1"
       >
         {% assign last_date = '' %}
         {% assign s_count = 0 %}

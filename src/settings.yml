@@ -63,6 +63,12 @@ custom_fields:
     description: "Define how tomorrow is called. This helps with localization."
     default: Tomorrow
     optional: true
+  - keyname: events_label
+    field_type: string
+    name: 'Word for "events"'
+    description: 'Define how events are called. This helps with localization.'
+    default: events
+    optional: true
   - keyname: important_events
     field_type: multi_string
     name: "Important Events"
